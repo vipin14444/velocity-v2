@@ -1,0 +1,13 @@
+.call-message {
+    color: #ffffff;
+    background-color: coral;
+}
+
+.call-message.error {
+    color: #d81a1a;
+    // background-color: #ffffff;
+}
+
+.call-message-header {
+    font-weight: bold;
+}

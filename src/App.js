@@ -1,25 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.scss";
+import { BrowserRouter, Route } from "react-router-dom";
+import Home from "./pages/home/Home.jsx";
+import DailyVideo from "./pages/daily-video/Daily.jsx";
+import DailyAudio from "./pages/daily-audio/DailyAudio";
+import Meeting from "./pages/meeting/Meeting";
+import Meet from "./pages/closeapp-meeting/Meet";
+import Meet100ms from "./pages/100ms/Meet100ms";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App = () => {
+    return (
+        <div className="App">
+            <BrowserRouter>
+                <Route path="/" exact component={Home} />
+                <Route path="/daily" exact component={DailyVideo} />
+                <Route path="/daily-audio" exact component={DailyAudio} />
+                <Route path="/meeting" exact component={Meeting} />
+                <Route path="/meet" exact component={Meet} />
+                <Route path="/100ms" exact component={Meet100ms} />
+            </BrowserRouter>
+        </div>
+    );
+};
 
 export default App;
