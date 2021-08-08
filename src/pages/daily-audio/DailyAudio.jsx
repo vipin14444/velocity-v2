@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import theme from "./theme";
-import logo from "./icons/logo.svg";
 import { CallProvider, INCALL, PREJOIN, useCallState } from "./CallProvider";
 import { SmallText } from "./components/shared/SmallText";
 import PreJoinRoom from "./components/PreJoinRoom";
@@ -52,9 +51,9 @@ const Wrapper = styled.div`
     min-height: 100%;
     margin: 0 auto;
 `;
-const Logo = styled.img`
-    height: 24px;
-`;
+// const Logo = styled.img`
+//     height: 24px;
+// `;
 const Header = styled.header`
     display: flex;
     flex-direction: column;
@@ -70,18 +69,18 @@ const Title = styled.h1`
     margin: 4px 0;
     font-weight: 600;
 `;
-const Link = styled.a`
-    font-weight: 400;
-    font-size: ${theme.fontSize.base};
-    color: ${theme.colors.greyDark};
-    display: flex;
-    justify-content: center;
-    max-width: 400px;
+// const Link = styled.a`
+//     font-weight: 400;
+//     font-size: ${theme.fontSize.base};
+//     color: ${theme.colors.greyDark};
+//     display: flex;
+//     justify-content: center;
+//     max-width: 400px;
 
-    @media only screen and (min-width: 768px) {
-        justify-content: ${(props) => (props.center ? "center" : "flex-start")};
-        max-width: ${(props) => (props.center ? "100%" : "400px")};
-    }
-`;
+//     @media only screen and (min-width: 768px) {
+//         justify-content: ${(props) => (props.center ? "center" : "flex-start")};
+//         max-width: ${(props) => (props.center ? "100%" : "400px")};
+//     }
+// `;
 
 export default DailyAudio;

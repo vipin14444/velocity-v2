@@ -14,12 +14,12 @@ const MeetingAfterJoin = () => {
         room,
         view,
         getAccountType,
-        leaveCall,
+        // leaveCall,
         handleMute,
         handleUnmute,
         raiseHand,
         lowerHand,
-        endCall,
+        // endCall,
     } = useCallState();
 
     console.log(participants);

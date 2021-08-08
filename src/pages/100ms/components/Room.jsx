@@ -1,6 +1,5 @@
 import React from "react";
 import {
-    useHMSActions,
     useHMSStore,
     selectLocalPeer,
     selectPeers,
