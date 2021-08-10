@@ -1,13 +1,16 @@
 import React, { useCallback } from "react";
 import styled from "styled-components";
 import { IoMdMic, IoMdMicOff } from "react-icons/io";
-import { useHMSStore, selectTracksMap } from "@100mslive/hms-video-react";
+import {
+    useHMSStore,
+    selectTracksMap,
+    useHMSActions,
+} from "@100mslive/hms-video-react";
+import { HOST, LISTENER, MOD, SPEAKER } from "../constants/Roles";
 
-const Participant = ({ peer, isLocal }) => {
-    // const isPeerAudioEnabled = useHMSStore((store) =>
-    //     selectIsPeerAudioEnabled(peer.id, store)
-    // ); //Is a remote peer muted?
-
+const Participant = ({ peer, localPeer }) => {
+    const hmsAction = useHMSActions();
+    
     const getDisplayPicture = useCallback(() => {
         let customerDescription = peer.customerDescription;
         if (customerDescription) {
@@ -23,8 +26,18 @@ const Participant = ({ peer, isLocal }) => {
 
     const displayPictureUrl = getDisplayPicture();
 
+    const showOptions = () => {
+        if (localPeer.roleName === HOST || localPeer.roleName === MOD) {
+            if (peer.roleName === LISTENER) {
+                hmsAction.changeRole(peer.id, SPEAKER, true);
+            } else {
+                hmsAction.changeRole(peer.id, LISTENER, true);
+            }
+        }
+    };
+
     return (
-        <ParticipantContainer>
+        <ParticipantContainer onClick={showOptions}>
             <AvatarContainer>
                 <Avatar src={displayPictureUrl} />
                 {isAudioEnabled ? (
@@ -49,6 +62,7 @@ const ParticipantContainer = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    border: 1px solid cornflowerblue;
 `;
 
 const AvatarContainer = styled.div`

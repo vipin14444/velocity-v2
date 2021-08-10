@@ -7,7 +7,7 @@ import { IoMdMic, IoMdMicOff, IoMdGlobe } from "react-icons/io";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 import { useEffect } from "react";
-import { HOST, MOD, SPEAKER } from "./constants/Roles";
+import { HOST, LISTENER, MOD, SPEAKER } from "./constants/Roles";
 import { getToken } from "./utils/apiUtils";
 import {
     selectIsConnectedToRoom,
@@ -45,6 +45,7 @@ const Meet = () => {
         if (view === VIEWS.INCALL) {
             hmsActions.setLocalAudioEnabled(false);
             hmsActions.setLocalVideoEnabled(false);
+            // hmsActions.changeRole(localPeer.id, SPEAKER, true)
         }
     }, [hmsActions, view]);
 
@@ -221,6 +222,7 @@ const Meet = () => {
                                             <Participant
                                                 key={idx}
                                                 peer={peer}
+                                                localPeer={localPeer}
                                                 isLocal={false}
                                             />
                                         ))}
@@ -229,16 +231,18 @@ const Meet = () => {
                             <ActionTray>
                                 <ToggleActionsContainer>
                                     <ToggleActionsWrapper>
-                                        <ToggleMic
-                                            active={isLocalAudioEnabled}
-                                            onClick={toggleAudio}
-                                        >
-                                            {isLocalAudioEnabled ? (
-                                                <IoMdMic />
-                                            ) : (
-                                                <IoMdMicOff />
-                                            )}
-                                        </ToggleMic>
+                                        {localPeer.roleName !== LISTENER ? (
+                                            <ToggleMic
+                                                active={isLocalAudioEnabled}
+                                                onClick={toggleAudio}
+                                            >
+                                                {isLocalAudioEnabled ? (
+                                                    <IoMdMic />
+                                                ) : (
+                                                    <IoMdMicOff />
+                                                )}
+                                            </ToggleMic>
+                                        ) : null}
                                         {localPeer.roleName === HOST ||
                                         localPeer.roleName === MOD ? (
                                             <ToggleVideo
