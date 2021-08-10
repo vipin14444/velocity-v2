@@ -60,9 +60,18 @@ const SharedVideoContainer = styled.div`
 const VideoPlayer = styled.div`
     margin-top: 1rem;
     aspect-ratio: 16/9;
-    /* background: black; */
-    background-image: url("https://i.natgeofe.com/n/b3eec229-e359-4367-9502-29b444e244d7/20-rajasthan1469.jpg?w=636&h=424");
+    background: black;
+    /* background-image: url("https://i.natgeofe.com/n/b3eec229-e359-4367-9502-29b444e244d7/20-rajasthan1469.jpg?w=636&h=424"); */
     background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    video {
+        width: 100%;
+        height: 100%;
+        border-radius: 6px;
+    }
 `;
 
 const VideoSharingParticipant = styled.div`

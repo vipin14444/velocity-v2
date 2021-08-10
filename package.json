@@ -9,6 +9,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "https-localhost": "^4.6.5",
     "node-sass": "^4.14.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -20,6 +21,7 @@
   },
   "scripts": {
     "start": "set PORT=3019 && react-scripts start",
+    "dev-https": "set HTTPS=true && set SSL_CRT_FILE=localhost.pem && set SSL_KEY_FILE=localhost-key.pem && set PORT=3019 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
