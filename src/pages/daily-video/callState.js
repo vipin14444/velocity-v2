@@ -120,7 +120,6 @@ const containsScreenShare = (callItems) => {
 };
 
 const getMessage = (callState) => {
-    debugger
     function shouldShowClickAllow() {
         const localCallItem = getLocalCallItem(callState.callItems);
         const hasLoaded = localCallItem && !localCallItem.isLoading;

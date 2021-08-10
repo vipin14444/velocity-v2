@@ -2,151 +2,273 @@ import React from "react";
 import styled from "styled-components";
 import { HiUserGroup } from "react-icons/hi";
 import { BiPlus } from "react-icons/bi";
-import { MdMoreVert } from "react-icons/md";
+import { MdMoreVert, MdVideocam, MdVideocamOff } from "react-icons/md";
 import { IoMdMic, IoMdMicOff, IoMdGlobe } from "react-icons/io";
+import { useHistory } from "react-router-dom";
+import { useState } from "react";
+import { useEffect } from "react";
+import { HOST, MOD, SPEAKER } from "./constants/Roles";
+import { getToken } from "./utils/apiUtils";
+import {
+    selectIsConnectedToRoom,
+    selectIsLocalAudioEnabled,
+    selectIsLocalVideoEnabled,
+    selectLocalPeer,
+    selectPeers,
+    useHMSActions,
+    useHMSStore,
+} from "@100mslive/hms-video-react";
+import Participant from "./components/Participant";
+import { getMediaPermission } from "./utils/permissionUtils";
+import SharedVideo from "./components/SharedVideo";
+
+const VIEWS = {
+    PREJOIN: "pre-join",
+    INCALL: "in-call",
+};
 
 const Meet = () => {
+    const [data, setData] = useState(null);
+    const [name, setName] = useState("");
+    const [role, setRole] = useState("host");
+    const [view, setView] = useState(() => VIEWS.PREJOIN);
+    const history = useHistory();
+
+    const hmsActions = useHMSActions();
+    const isConnected = useHMSStore(selectIsConnectedToRoom);
+    const localPeer = useHMSStore(selectLocalPeer);
+    const peers = useHMSStore(selectPeers);
+    const isLocalAudioEnabled = useHMSStore(selectIsLocalAudioEnabled);
+    const isLocalVideoEnabled = useHMSStore(selectIsLocalVideoEnabled);
+
+    useEffect(() => {
+        if (view === VIEWS.INCALL) {
+            hmsActions.setLocalAudioEnabled(false);
+            hmsActions.setLocalVideoEnabled(false);
+        }
+    }, [hmsActions, view]);
+
+    useEffect(() => {
+        const obj = new URLSearchParams(history.location.search).get("data");
+        const roomId = new URLSearchParams(history.location.search).get(
+            "roomid"
+        );
+        if (obj) {
+            obj.roomId = roomId || "610f8fcaf30e773f47577b93";
+            setData(obj);
+            setView(VIEWS.INCALL);
+        }
+    }, [history]);
+
+    const joinCallAsAGuest = async (e) => {
+        if (name) {
+            const roomId = new URLSearchParams(history.location.search).get(
+                "roomid"
+            );
+            let newData = {
+                userName: name,
+                roomId: roomId || "610f8fcaf30e773f47577b93",
+                role: role === HOST ? HOST : SPEAKER,
+                displayPictureUrl: `https://randomuser.me/api/portraits/men/${
+                    Math.floor(Math.random() * 70) + 20
+                }.jpg`,
+            };
+
+            const token = await getToken(newData);
+            const joinConfig = {
+                userName: name,
+                authToken: token, //This token should be generated from your token service
+                metaData: JSON.stringify(newData), //This is custom string that you can attach.
+                settings: {
+                    isAudioMuted: true, // Join with audio muted?
+                    isVideoMuted: true, // Join with video muted?
+                },
+            };
+
+            hmsActions.join(joinConfig);
+
+            setData(newData);
+            setView(VIEWS.INCALL);
+        } else {
+            alert("Cannot enter without name");
+        }
+    };
+
+    const leaveRoom = () => {
+        hmsActions.leave();
+        setView(VIEWS.PREJOIN);
+    };
+
+    const toggleAudio = async () => {
+        if (await getMediaPermission({ audio: true })) {
+            hmsActions.setLocalAudioEnabled(!isLocalAudioEnabled);
+        } else {
+            alert("Audio device not found!");
+        }
+    };
+
+    const toggleVideo = async () => {
+        if (await getMediaPermission({ video: true })) {
+            hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
+        } else {
+            alert("Camera not found!");
+        }
+    };
+
+    const host = peers.find((x) => x.roleName === HOST);
+
     return (
-        <Container>
-            <Header>सामूहिक चर्चा</Header>
-            <Content>
-                <ContentHeader>
-                    <div className="row-1">
-                        <div className="details">
-                            <div className="location">
-                                <div className="name">बेटमा</div>
-                                <HiUserGroup />
-                            </div>
-                            <div className="title">साड़ी सेल, रोजाना बजे</div>
-                        </div>
-                        <div className="actions">
-                            <button className="btn btn-plus">
-                                <BiPlus />
-                            </button>
-                            <button className="btn btn-dots">
-                                <MdMoreVert />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="row-2">
-                        <div className="meeting-privacy">
-                            <IoMdGlobe />
-                            <div className="meeting-type">खुली चर्चा</div>
-                        </div>
-                        <div className="meeting-users">
-                            <div className="user-stack">
-                                <img
-                                    src={`https://randomuser.me/api/portraits/men/51.jpg`}
-                                    className="user"
-                                    alt={"user"}
-                                />
-                                <img
-                                    src={`https://randomuser.me/api/portraits/women/51.jpg`}
-                                    className="user"
-                                    alt={"user"}
-                                />
-                                <img
-                                    src={`https://randomuser.me/api/portraits/men/39.jpg`}
-                                    className="user"
-                                    alt={"user"}
+        <>
+            {view === VIEWS.PREJOIN && (
+                <Container>
+                    <Header>सामूहिक चर्चा</Header>
+                    <Content>
+                        <div className="name-form" style={{ padding: "1rem" }}>
+                            <div className="form-group">
+                                <label htmlFor="name">
+                                    Please enter your name:
+                                </label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
                                 />
                             </div>
-                            <div className="rem-users">+40</div>
+                            <div className="form-group">
+                                <label htmlFor="name">
+                                    Please enter your role:
+                                </label>
+                                <input
+                                    type="text"
+                                    id="role"
+                                    name="role"
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                />
+                            </div>
+                            <div className="actions">
+                                <button onClick={joinCallAsAGuest}>Join</button>
+                            </div>
                         </div>
-                    </div>
-                </ContentHeader>
+                    </Content>
+                </Container>
+            )}
 
-                <MeetingSection>
-                    <SharedVideoContainer>
-                        <VideoPlayer></VideoPlayer>
-                        <VideoSharingParticipant />
-                    </SharedVideoContainer>
-                    <MeetingUsersContainer>
-                        <Participant>
-                            <AvatarContainer>
-                                <Avatar
-                                    src={`https://randomuser.me/api/portraits/women/26.jpg`}
-                                />
-                                <MutedIcon>
-                                    <IoMdMicOff />
-                                </MutedIcon>
-                            </AvatarContainer>
-                            <Name>सपना</Name>
-                        </Participant>
-                        <Participant>
-                            <AvatarContainer>
-                                <Avatar
-                                    src={`https://randomuser.me/api/portraits/men/50.jpg`}
-                                />
-                                <UnmutedIcon>
-                                    <IoMdMic />
-                                </UnmutedIcon>
-                            </AvatarContainer>
-                            <Name>राजू</Name>
-                        </Participant>
-                        <Participant>
-                            <AvatarContainer>
-                                <Avatar
-                                    src={`https://randomuser.me/api/portraits/men/77.jpg`}
-                                />
-                                <MutedIcon>
-                                    <IoMdMicOff />
-                                </MutedIcon>
-                            </AvatarContainer>
-                            <Name>दिनेश</Name>
-                        </Participant>
-                        <Participant>
-                            <AvatarContainer>
-                                <Avatar
-                                    src={`https://randomuser.me/api/portraits/women/30.jpg`}
-                                />
-                                <UnmutedIcon>
-                                    <IoMdMic />
-                                </UnmutedIcon>
-                            </AvatarContainer>
-                            <Name>सरोज</Name>
-                        </Participant>
-                        <Participant>
-                            <AvatarContainer>
-                                <Avatar
-                                    src={`https://randomuser.me/api/portraits/men/26.jpg`}
-                                />
-                                <MutedIcon>
-                                    <IoMdMicOff />
-                                </MutedIcon>
-                            </AvatarContainer>
-                            <Name>अंकुश</Name>
-                        </Participant>
-                        <Participant>
-                            <AvatarContainer>
-                                <Avatar
-                                    src={`https://randomuser.me/api/portraits/men/33.jpg`}
-                                />
-                                <MutedIcon>
-                                    <IoMdMicOff />
-                                </MutedIcon>
-                            </AvatarContainer>
-                            <Name>अमित</Name>
-                        </Participant>
-                    </MeetingUsersContainer>
+            {view === VIEWS.INCALL && isConnected && data && (
+                <Container>
+                    <Header>सामूहिक चर्चा</Header>
+                    <Content>
+                        <ContentHeader>
+                            <div className="row-1">
+                                <div className="details">
+                                    <div className="location">
+                                        <div className="name">बेटमा</div>
+                                        <HiUserGroup />
+                                    </div>
+                                    <div className="title">
+                                        साड़ी सेल, रोजाना बजे
+                                    </div>
+                                </div>
+                                <div className="actions">
+                                    <button className="btn btn-plus">
+                                        <BiPlus />
+                                    </button>
+                                    <button className="btn btn-dots">
+                                        <MdMoreVert />
+                                    </button>
+                                </div>
+                            </div>
 
-                    <ActionTray>
-                        <ToggleMicContainer>
-                            <ToggleMic>
-                                <IoMdMic />
-                            </ToggleMic>
-                        </ToggleMicContainer>
-                        <button className="btn btn-danger btn-secondary">
-                            मीटिंग से बहार जाये
-                        </button>
-                        <button className="btn btn-action btn-primary">
-                            शेयर करे
-                        </button>
-                    </ActionTray>
-                </MeetingSection>
-            </Content>
-        </Container>
+                            <div className="row-2">
+                                <div className="meeting-privacy">
+                                    <IoMdGlobe />
+                                    <div className="meeting-type">
+                                        खुली चर्चा
+                                    </div>
+                                </div>
+                                <div className="meeting-users">
+                                    <div className="user-stack">
+                                        <img
+                                            src={`https://randomuser.me/api/portraits/men/51.jpg`}
+                                            className="user"
+                                            alt={"user"}
+                                        />
+                                        <img
+                                            src={`https://randomuser.me/api/portraits/women/51.jpg`}
+                                            className="user"
+                                            alt={"user"}
+                                        />
+                                        <img
+                                            src={`https://randomuser.me/api/portraits/men/39.jpg`}
+                                            className="user"
+                                            alt={"user"}
+                                        />
+                                    </div>
+                                    <div className="rem-users">+40</div>
+                                </div>
+                            </div>
+                        </ContentHeader>
+
+                        <MeetingSection>
+                            {host ? <SharedVideo host={host} /> : null}
+                            <MeetingUsersContainer>
+                                {peers &&
+                                    peers
+                                        .filter((x) => !x.isLocal)
+                                        .map((peer, idx) => (
+                                            <Participant
+                                                key={idx}
+                                                peer={peer}
+                                                isLocal={false}
+                                            />
+                                        ))}
+                            </MeetingUsersContainer>
+
+                            <ActionTray>
+                                <ToggleActionsContainer>
+                                    <ToggleActionsWrapper>
+                                        <ToggleMic
+                                            active={isLocalAudioEnabled}
+                                            onClick={toggleAudio}
+                                        >
+                                            {isLocalAudioEnabled ? (
+                                                <IoMdMic />
+                                            ) : (
+                                                <IoMdMicOff />
+                                            )}
+                                        </ToggleMic>
+                                        {localPeer.roleName === HOST ||
+                                        localPeer.roleName === MOD ? (
+                                            <ToggleVideo
+                                                active={isLocalVideoEnabled}
+                                                onClick={toggleVideo}
+                                            >
+                                                {isLocalVideoEnabled ? (
+                                                    <MdVideocam />
+                                                ) : (
+                                                    <MdVideocamOff />
+                                                )}
+                                            </ToggleVideo>
+                                        ) : null}
+                                    </ToggleActionsWrapper>
+                                </ToggleActionsContainer>
+                                <button
+                                    className="btn btn-danger btn-secondary"
+                                    onClick={leaveRoom}
+                                >
+                                    मीटिंग से बहार जाये
+                                </button>
+                                <button className="btn btn-action btn-primary">
+                                    शेयर करे
+                                </button>
+                            </ActionTray>
+                        </MeetingSection>
+                    </Content>
+                </Container>
+            )}
+        </>
     );
 };
 
@@ -280,27 +402,6 @@ const ContentHeader = styled.div`
 `;
 
 const MeetingSection = styled.div``;
-const SharedVideoContainer = styled.div`
-    position: relative;
-`;
-const VideoPlayer = styled.div`
-    margin-top: 1rem;
-    aspect-ratio: 16/9;
-    background-image: url("https://i.natgeofe.com/n/b3eec229-e359-4367-9502-29b444e244d7/20-rajasthan1469.jpg?w=636&h=424");
-    background-size: cover;
-`;
-
-const VideoSharingParticipant = styled.div`
-    width: 60px;
-    height: 60px;
-    background-image: url("https://randomuser.me/api/portraits/men/56.jpg");
-    background-size: cover;
-    border-radius: 50%;
-    box-shadow: 0px 0px 0px 3px #ffffff, 0px 0px 0px 6px #4d2bd6;
-    position: absolute;
-    top: calc(1rem + 6px);
-    left: calc(1rem + 6px);
-`;
 
 const MeetingUsersContainer = styled.div`
     display: grid;
@@ -310,60 +411,6 @@ const MeetingUsersContainer = styled.div`
     padding: 1rem;
     margin-top: 1rem;
     padding-bottom: 12rem;
-`;
-
-const Participant = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-`;
-
-const AvatarContainer = styled.div`
-    position: relative;
-    width: 80px;
-    height: 80px;
-`;
-
-const Avatar = styled.img`
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-`;
-
-const MutedIcon = styled.div`
-    width: 30px;
-    height: 30px;
-    background-color: white;
-    border-radius: 50%;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    border: 1px solid #f2f2f2;
-    display: grid;
-    place-content: center;
-    color: #fd635e;
-    font-size: 1.25rem;
-`;
-
-const UnmutedIcon = styled.div`
-    width: 30px;
-    height: 30px;
-    background-color: white;
-    border-radius: 50%;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    border: 1px solid #f2f2f2;
-    display: grid;
-    place-content: center;
-    color: #4d2ad4;
-    font-size: 1.25rem;
-`;
-
-const Name = styled.div`
-    text-align: center;
-    margin-top: 0.35rem;
 `;
 
 const ActionTray = styled.div`
@@ -401,7 +448,7 @@ const ActionTray = styled.div`
     }
 `;
 
-const ToggleMicContainer = styled.div`
+const ToggleActionsContainer = styled.div`
     position: absolute;
     top: -1rem;
     left: 0;
@@ -412,9 +459,7 @@ const ToggleMicContainer = styled.div`
     justify-content: center;
 `;
 
-const ToggleMic = styled.button`
-    position: absolute;
-    bottom: 0;
+const ToggleButton = styled.button`
     width: 65px;
     height: 65px;
     border: none;
@@ -427,4 +472,21 @@ const ToggleMic = styled.button`
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     color: white;
     font-size: 2.25rem;
+`;
+
+const ToggleActionsWrapper = styled.div`
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+`;
+
+const ToggleMic = styled(ToggleButton)`
+    background: ${(props) => (!props.active ? "#f82a2a" : "#4d2ad4")};
+`;
+
+const ToggleVideo = styled(ToggleButton)`
+    background: ${(props) => (!props.active ? "#f82a2a" : "#4d2ad4")};
 `;

@@ -36,7 +36,6 @@ const MeetingPreJoin = () => {
                  */
                 userName = `${userName?.trim()}_${MOD}`;
             }
-            debugger;
             joinRoom({ userName, name });
         },
         [firstName, joinRoom, lastName, roomName, submitting]
