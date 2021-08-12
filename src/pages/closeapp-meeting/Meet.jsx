@@ -113,19 +113,19 @@ const Meet = () => {
 	};
 
 	const toggleVideo = async () => {
-		try {
-			if (await getMediaPermission({ video: true })) {
-				hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
-			} else {
-				alert("Camera not found!");
-			}
-		} catch (err) {
-			try {
-				hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
-			} catch (err) {
-				alert("Force camera enable failed");
-			}
-		}
+        hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
+		// try {
+		// 	if (await getMediaPermission({ video: true })) {
+		// 	} else {
+		// 		alert("Camera not found!");
+		// 	}
+		// } catch (err) {
+		// 	try {
+		// 		hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
+		// 	} catch (err) {
+		// 		alert("Force camera enable failed");
+		// 	}
+		// }
 	};
 
 	const toggleCamera = async () => {
