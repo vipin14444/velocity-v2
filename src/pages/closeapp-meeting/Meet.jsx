@@ -113,30 +113,42 @@ const Meet = () => {
 	};
 
 	const toggleVideo = async () => {
-		if (await getMediaPermission({ video: true })) {
-			hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
-		} else {
-			alert("Camera not found!");
+		try {
+			if (await getMediaPermission({ video: true })) {
+				hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
+			} else {
+				alert("Camera not found!");
+			}
+		} catch (err) {
+			try {
+				hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
+			} catch (err) {
+				alert("Force camera enable failed");
+			}
 		}
 	};
 
 	const toggleCamera = async () => {
-		const selectedVideoDeviceIndex = devices.videoInput.findIndex(
-			(x) => x.deviceId === selected.videoInputDeviceId
-		);
-		let nextDeviceIndex = 0;
-		if (selectedVideoDeviceIndex >= 0) {
-			if (selectedVideoDeviceIndex === devices.videoInput.length - 1) {
-				// Last element so go back to 1st one
-				nextDeviceIndex = 0;
-			} else {
-				// not last element so go the next element
-				nextDeviceIndex++;
-			}
-		}
+		const dID =
+			"35f4ca7a24cd4857204f71f659c0ca7be1c7f60b5d35ed8555f120a22b62e11d";
+
+		// const selectedVideoDeviceIndex = devices.videoInput.findIndex(
+		// 	(x) => x.deviceId === selected.videoInputDeviceId
+		// );
+		// let nextDeviceIndex = 0;
+		// if (selectedVideoDeviceIndex >= 0) {
+		// 	if (selectedVideoDeviceIndex === devices.videoInput.length - 1) {
+		// 		// Last element so go back to 1st one
+		// 		nextDeviceIndex = 0;
+		// 	} else {
+		// 		// not last element so go the next element
+		// 		nextDeviceIndex++;
+		// 	}
+		// }
 
 		hmsActions.setVideoSettings({
-			deviceId: devices.videoInput[nextDeviceIndex].deviceId,
+			deviceId: dID,
+			// deviceId: devices.videoInput[nextDeviceIndex].deviceId,
 		});
 	};
 
@@ -243,8 +255,8 @@ const Meet = () => {
 											/>
 										))}
 								All: {JSON.stringify(devices.videoInput, null, 4)}
-                                <br />
-                                <br />
+								<br />
+								<br />
 								Selected: {JSON.stringify(selected, null, 4)}
 							</MeetingUsersContainer>
 
