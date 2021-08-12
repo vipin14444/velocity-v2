@@ -62,7 +62,6 @@ const ParticipantContainer = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border: 1px solid cornflowerblue;
 `;
 
 const AvatarContainer = styled.div`
