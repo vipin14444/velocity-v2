@@ -242,10 +242,6 @@ const Meet = () => {
 												isLocal={false}
 											/>
 										))}
-								All: {JSON.stringify(devices.videoInput, null, 4)}
-								<br />
-								<br />
-								Selected: {JSON.stringify(selected, null, 4)}
 							</MeetingUsersContainer>
 
 							<ActionTray>
@@ -272,10 +268,9 @@ const Meet = () => {
 														<MdVideocamOff />
 													)}
 												</ToggleVideo>
-												{devices?.videoInput?.length > 1 && isLocalVideoEnabled ? (
-													<ToggleCamera
-														onClick={toggleCamera}
-													>
+												{devices?.videoInput?.length > 1 &&
+												isLocalVideoEnabled ? (
+													<ToggleCamera onClick={toggleCamera}>
 														<RiCameraSwitchFill />
 													</ToggleCamera>
 												) : null}
