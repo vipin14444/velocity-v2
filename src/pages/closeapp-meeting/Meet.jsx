@@ -18,7 +18,8 @@ import {
 	selectIsLocalVideoEnabled,
 	selectLocalPeer,
 	selectPeers,
-    selectDevices,
+	selectDevices,
+	selectLocalMediaSettings,
 	useHMSActions,
 	useHMSStore,
 } from "@100mslive/hms-video-react";
@@ -42,9 +43,11 @@ const Meet = () => {
 	const isLocalAudioEnabled = useHMSStore(selectIsLocalAudioEnabled);
 	const isLocalVideoEnabled = useHMSStore(selectIsLocalVideoEnabled);
 
-    const devices = useHMSStore(selectDevices);
-    console.log(`devices: `,devices);
+	const devices = useHMSStore(selectDevices);
+	console.log(`devices: `, devices);
 
+	const selected = useHMSStore(selectLocalMediaSettings);
+	console.log(`selected: `, selected);
 
 	useEffect(() => {
 		if (view === VIEWS.INCALL) {
@@ -115,6 +118,26 @@ const Meet = () => {
 		} else {
 			alert("Camera not found!");
 		}
+	};
+
+	const toggleCamera = async () => {
+		const selectedVideoDeviceIndex = devices.videoInput.findIndex(
+			(x) => x.deviceId === selected.videoInputDeviceId
+		);
+		let nextDeviceIndex = 0;
+		if (selectedVideoDeviceIndex >= 0) {
+			if (selectedVideoDeviceIndex === devices.videoInput.length - 1) {
+				// Last element so go back to 1st one
+				nextDeviceIndex = 0;
+			} else {
+				// not last element so go the next element
+				nextDeviceIndex++;
+			}
+		}
+
+		hmsActions.setVideoSettings({
+			deviceId: devices.videoInput[nextDeviceIndex].deviceId,
+		});
 	};
 
 	const host = peers.find((x) => x.roleName === HOST);
@@ -219,8 +242,10 @@ const Meet = () => {
 												isLocal={false}
 											/>
 										))}
-
-                                {JSON.stringify(devices.videoInput)}
+								All: {JSON.stringify(devices.videoInput, null, 4)}
+                                <br />
+                                <br />
+								Selected: {JSON.stringify(selected, null, 4)}
 							</MeetingUsersContainer>
 
 							<ActionTray>
@@ -236,16 +261,30 @@ const Meet = () => {
 										) : null}
 										{localPeer.roleName === HOST ||
 										localPeer.roleName === MOD ? (
-											<ToggleVideo
-												active={isLocalVideoEnabled}
-												onClick={toggleVideo}
-											>
-												{isLocalVideoEnabled ? (
-													<MdVideocam />
-												) : (
-													<MdVideocamOff />
-												)}
-											</ToggleVideo>
+											<>
+												<ToggleVideo
+													active={isLocalVideoEnabled}
+													onClick={toggleVideo}
+												>
+													{isLocalVideoEnabled ? (
+														<MdVideocam />
+													) : (
+														<MdVideocamOff />
+													)}
+												</ToggleVideo>
+												{devices?.videoInput?.length > 1 ? (
+													<ToggleVideo
+														active={isLocalVideoEnabled}
+														onClick={toggleCamera}
+													>
+														{isLocalVideoEnabled ? (
+															<MdVideocam />
+														) : (
+															<MdVideocamOff />
+														)}
+													</ToggleVideo>
+												) : null}
+											</>
 										) : null}
 									</ToggleActionsWrapper>
 								</ToggleActionsContainer>
