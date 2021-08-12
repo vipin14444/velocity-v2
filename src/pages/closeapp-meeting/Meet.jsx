@@ -4,13 +4,13 @@ import { HiUserGroup } from "react-icons/hi";
 import { BiPlus } from "react-icons/bi";
 import { MdMoreVert, MdVideocam, MdVideocamOff } from "react-icons/md";
 import { IoMdMic, IoMdMicOff, IoMdGlobe } from "react-icons/io";
+import { RiCameraSwitchFill } from "react-icons/ri";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 import { useEffect } from "react";
 import { HOST, LISTENER, MOD, SPEAKER } from "./constants/Roles";
 import { getToken } from "./utils/apiUtils";
 import Participant from "./components/Participant";
-import { getMediaPermission } from "./utils/permissionUtils";
 import SharedVideo from "./components/SharedVideo";
 import {
 	selectIsConnectedToRoom,
@@ -105,7 +105,7 @@ const Meet = () => {
 	};
 
 	const toggleAudio = async () => {
-		if (await getMediaPermission({ audio: true })) {
+		if (devices?.audioInput?.length) {
 			hmsActions.setLocalAudioEnabled(!isLocalAudioEnabled);
 		} else {
 			alert("Audio device not found!");
@@ -113,25 +113,14 @@ const Meet = () => {
 	};
 
 	const toggleVideo = async () => {
-        hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
-		// try {
-		// 	if (await getMediaPermission({ video: true })) {
-		// 	} else {
-		// 		alert("Camera not found!");
-		// 	}
-		// } catch (err) {
-		// 	try {
-		// 		hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
-		// 	} catch (err) {
-		// 		alert("Force camera enable failed");
-		// 	}
-		// }
+		if (devices?.videoInput?.length) {
+			hmsActions.setLocalVideoEnabled(!isLocalVideoEnabled);
+		} else {
+			alert("Camera not found!");
+		}
 	};
 
 	const toggleCamera = async () => {
-		// const dID =
-		// 	"35f4ca7a24cd4857204f71f659c0ca7be1c7f60b5d35ed8555f120a22b62e11d";
-
 		const selectedVideoDeviceIndex = devices.videoInput.findIndex(
 			(x) => x.deviceId === selected.videoInputDeviceId
 		);
@@ -147,7 +136,6 @@ const Meet = () => {
 		}
 
 		hmsActions.setVideoSettings({
-			// deviceId: dID,
 			deviceId: devices.videoInput[nextDeviceIndex].deviceId,
 		});
 	};
@@ -284,17 +272,12 @@ const Meet = () => {
 														<MdVideocamOff />
 													)}
 												</ToggleVideo>
-												{devices?.videoInput?.length > 1 ? (
-													<ToggleVideo
-														active={isLocalVideoEnabled}
+												{devices?.videoInput?.length > 1 && isLocalVideoEnabled ? (
+													<ToggleCamera
 														onClick={toggleCamera}
 													>
-														{isLocalVideoEnabled ? (
-															<MdVideocam />
-														) : (
-															<MdVideocamOff />
-														)}
-													</ToggleVideo>
+														<RiCameraSwitchFill />
+													</ToggleCamera>
 												) : null}
 											</>
 										) : null}
@@ -533,4 +516,8 @@ const ToggleMic = styled(ToggleButton)`
 
 const ToggleVideo = styled(ToggleButton)`
 	background: ${(props) => (!props.active ? "#f82a2a" : "#4d2ad4")};
+`;
+
+const ToggleCamera = styled(ToggleButton)`
+	background: #18a45d;
 `;
